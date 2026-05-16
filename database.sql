@@ -109,7 +109,8 @@ INSERT INTO faculty (name, designation, department, email, phone, office, specia
 ('Dr. Sana Malik', 'Associate Professor', 'Software Engineering', 'sana.malik@ssuet.edu.pk', '+92-21-34988011', 'Room 202', 'Machine Learning'),
 ('Dr. Ahmed Qureshi', 'Assistant Professor', 'Electrical Engineering', 'ahmed.qureshi@ssuet.edu.pk', '+92-21-34988012', 'Room 203', 'Power Systems'),
 ('Dr. Fatima Zahra', 'Assistant Professor', 'Biomedical Engineering', 'fatima.zahra@ssuet.edu.pk', '+92-21-34988013', 'Room 204', 'Medical Imaging'),
-('mrs. Mehwish', 'Assistant Professor', 'ACES', 'mehwish@ssuet.edu.pk', '+92-21-34988013', 'Room DFT2', 'AI');
+('mrs. Mehwish', 'Assistant Professor', 'ACES', 'mehwish@ssuet.edu.pk', '+92-21-34988013', 'Room DFT2', 'AI'),
+('mrs. kaneez', 'Assistant Professor', 'ACES', 'kaneez@ssuet.edu.pk', '+92-21-34988013', 'Room GFT4', 'AI');
 
 -- Create Indexes for Better Performance
 CREATE INDEX idx_user_email ON users(email);
