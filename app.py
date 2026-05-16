@@ -582,17 +582,10 @@ def health():
     })
 
 # ── MAIN ──
+# ── MAIN ──
 if __name__ == '__main__':
     print("\n" + "="*60)
     print("🎓 SSUET AI Assistant Server Starting...")
     print("="*60)
-    print("📍 Open in browser: http://127.0.0.1:5000")
-    print("🔐 Login required for all features")
-    print("👤 Admin Panel: http://127.0.0.1:5000/admin")
-    print("🔑 Admin Email: admin@ssuet.edu.pk")
-    print("🔑 Admin Password: admin123")
-    print("⚡ Admin auto-redirect: ENABLED")
-    print("="*60)
-    print("💚 Press CTRL+C to stop the server")
-    print("="*60 + "\n")
-    app.run(debug=True, port=5000, host='127.0.0.1')
+
+    app.run(host="0.0.0.0", port=5000)
