@@ -11,16 +11,15 @@ app = Flask(__name__, static_folder='static', template_folder='templates', stati
 CORS(app)
 app.secret_key = 'ssuet_ai_secret_key_2026_change_this_in_production'
 
-# ── DATABASE CONFIGURATION ──
 import mysql.connector
 
-conn = mysql.connector.connect(
-    host="autorack.proxy.rlwy.net",
-    user="root",
-    password="imEgXytMJnnvnotQQgMrPYPmJdekNWGI",
-    database="railway",
-    port=3306
-)
+DB_CONFIG = {
+    "host": "autorack.proxy.rlwy.net",
+    "user": "root",
+    "password": "imEgXytMJnnvnotQQgMrPYPmJdekNWGI",
+    "database": "railway",
+    "port": 3306
+}
 
 def get_db_connection():
     try:
