@@ -19,7 +19,7 @@ conn = mysql.connector.connect(
     user="root",
     password="imEgXytMJnnvnotQQgMrPYPmJdekNWGI",
     database="railway",
-    port=36297
+    port=3306
 )
 
 def get_db_connection():
