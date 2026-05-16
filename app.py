@@ -18,7 +18,7 @@ DB_CONFIG = {
     "user": "root",
     "password": "imEgXytMJnnvnotQQgMrPYPmJdekNWGI",
     "database": "railway",
-    "port": 3306
+    "port": 36297
 }
 
 def get_db_connection():
@@ -27,7 +27,23 @@ def get_db_connection():
     except Exception as e:
         print(f"❌ Database Connection Error: {e}")
         return None
+#testtttttttttttttt
+conn = get_db_connection()
 
+if conn:
+    print("✅ DATABASE CONNECTED SUCCESSFULLY")
+
+    cursor = conn.cursor()
+    cursor.execute("SHOW TABLES;")
+    
+    tables = cursor.fetchall()
+
+    print("📦 TABLES IN DATABASE:")
+    for t in tables:
+        print(t)
+
+else:
+    print("❌ CONNECTION FAILED")
 # ── API CONFIGURATION ──
 # We use a list for keys so the AI can switch if one runs out of credits
 import os
