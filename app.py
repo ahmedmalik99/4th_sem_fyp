@@ -12,12 +12,15 @@ CORS(app)
 app.secret_key = 'ssuet_ai_secret_key_2026_change_this_in_production'
 
 # ── DATABASE CONFIGURATION ──
-DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'root',  # ⚠️ CHANGE THIS to your MySQL password
-    'database': 'ssuet_ai_db'
-}
+import mysql.connector
+
+conn = mysql.connector.connect(
+    host="autorack.proxy.rlwy.net",
+    user="root",
+    password="imEgXytMJnnvnotQQgMrPYPmJdekNWGI",
+    database="railway",
+    port=36297
+)
 
 def get_db_connection():
     try:
