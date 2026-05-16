@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSUET AI Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- ✅ ALL CSS INLINE - No external file needed -->
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --purple:#6a0dad;--purple-light:#8e24aa;--purple-dark:#4a0080;
+  --green:#1a8c3f;--green-light:#22a84e;--gold:#f5a623;
+  --white:#fff;--bg:#f5f0fa;--surface:#fff;
+  --border:#e0d0f0;--text:#1a0a2e;--muted:#7a6a8a;
+}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 0% 0%,rgba(106,13,173,0.1) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 100% 100%,rgba(26,140,63,0.08) 0%,transparent 60%);pointer-events:none;z-index:0}
+
+/* Top Bar */
+.topbar{background:var(--purple-dark);padding:5px 20px;display:flex;align-items:center;justify-content:space-between;z-index:11;position:relative;flex-shrink:0}
+.topbar-left{display:flex;gap:14px;align-items:center}
+.topbar-link{color:rgba(255,255,255,0.75);font-size:11px;text-decoration:none;transition:color .2s}
+.topbar-link:hover{color:white}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.social-icon{width:22px;height:22px;background:rgba(255,255,255,0.15);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:white;cursor:pointer;transition:background .2s;text-decoration:none}
+.social-icon:hover{background:var(--purple-light)}
+
+/* Header */
+.header{background:white;padding:0 24px;height:78px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:10;border-bottom:3px solid var(--green);box-shadow:0 2px 16px rgba(106,13,173,0.12);flex-shrink:0}
+.header-left{display:flex;align-items:center;gap:16px}
+.ssuet-logo{width:60px;height:60px;flex-shrink:0}
+.ssuet-logo svg{width:100%;height:100%}
+.uni-name{line-height:1.2}
+.uni-name-top{font-size:20px;font-weight:800;color:var(--purple-dark);letter-spacing:-0.3px}
+.uni-name-bot{font-size:11px;color:var(--green);font-weight:600;letter-spacing:0.3px;text-transform:uppercase}
+.header-center{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--purple-dark),var(--purple-light));padding:8px 18px;border-radius:12px;box-shadow:0 4px 16px rgba(106,13,173,0.3)}
+.ai-badge-text{color:white;font-size:13px;font-weight:700;letter-spacing:0.5px}
+.ai-badge-sub{color:rgba(255,255,255,0.7);font-size:10px}
+.header-right{display:flex;align-items:center;gap:10px}
+.hec-badge{background:#f0fdf4;border:1.5px solid var(--green);color:var(--green);font-size:10px;font-weight:700;padding:5px 10px;border-radius:8px;letter-spacing:0.5px}
+.status-pill{display:flex;align-items:center;gap:6px;background:var(--bg);padding:6px 12px;border-radius:100px;border:1px solid var(--border)}
+.status-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;animation:pdot 2s infinite}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+.status-label{font-size:11px;color:var(--muted);font-weight:500}
+
+/* Nav Bar */
+.navbar{background:var(--purple);padding:0 24px;display:flex;align-items:center;gap:2px;position:relative;z-index:9;overflow-x:auto;flex-shrink:0}
+.navbar::-webkit-scrollbar{display:none}
+.nav-item{color:rgba(255,255,255,0.85);font-size:12px;font-weight:500;padding:11px 14px;cursor:pointer;white-space:nowrap;transition:all .2s;border-bottom:3px solid transparent}
+.nav-item:hover,.nav-item.active{color:white;border-bottom-color:var(--gold);background:rgba(255,255,255,0.08)}
+
+/* Ticker */
+.ticker{background:var(--green);padding:7px 20px;display:flex;align-items:center;gap:12px;overflow:hidden;position:relative;z-index:8;flex-shrink:0}
+.ticker-label{background:var(--gold);color:var(--text);font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;white-space:nowrap;letter-spacing:1px}
+.ticker-track{overflow:hidden;flex:1}
+.ticker-text{white-space:nowrap;font-size:12px;color:white;font-weight:500;animation:ticker 20s linear infinite}
+@keyframes ticker{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+
+/* Chat Container */
+.chat-container{flex:1;overflow-y:auto;padding:20px 24px;position:relative;z-index:1;scroll-behavior:smooth;display:flex;flex-direction:column;min-height:0}
+.chat-container::-webkit-scrollbar{width:6px}
+.chat-container::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* Welcome */
+.welcome{display:flex;flex-direction:column;align-items:center;padding:20px;text-align:center;animation:fadeUp .6s ease;flex-shrink:0}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.welcome-hero{background:linear-gradient(135deg,var(--purple-dark),var(--purple-light));border-radius:24px;padding:28px 36px;margin-bottom:20px;width:100%;max-width:560px;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(106,13,173,0.25)}
+.welcome-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(255,255,255,0.05);border-radius:50%}
+.welcome-hero::after{content:'';position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;background:rgba(245,166,35,0.15);border-radius:50%}
+.welcome-hero h2{font-size:22px;font-weight:800;color:white;margin-bottom:6px;position:relative;z-index:1}
+.welcome-hero p{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.6;position:relative;z-index:1}
+.welcome-hero .ai-icon{font-size:40px;margin-bottom:10px}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:560px}
+.quick-q{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:12.5px;color:var(--purple-dark);cursor:pointer;text-align:left;transition:all .2s;font-family:'Poppins',sans-serif;font-weight:500;line-height:1.4}
+.quick-q:hover{border-color:var(--purple);background:#f8f0ff;transform:translateY(-2px);box-shadow:0 4px 14px rgba(106,13,173,0.15)}
+.quick-q .q-icon{font-size:16px;display:block;margin-bottom:4px}
+
+/* Messages */
+.message{display:flex;gap:12px;margin-bottom:18px;animation:slideUp .3s ease;flex-shrink:0}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.message.user{flex-direction:row-reverse}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;margin-top:2px}
+.avatar.ai{background:linear-gradient(135deg,var(--purple-dark),var(--purple-light));color:white;box-shadow:0 2px 8px rgba(106,13,173,0.3)}
+.avatar.user-av{background:linear-gradient(135deg,var(--green),var(--green-light));color:white}
+.msg-wrap{max-width:72%;display:flex;flex-direction:column;gap:4px}
+.message.user .msg-wrap{align-items:flex-end}
+.msg-label{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:0.3px;padding:0 4px}
+.bubble{padding:13px 17px;border-radius:18px;font-size:14px;line-height:1.7}
+.message.ai .bubble{background:var(--surface);border:1.5px solid var(--border);border-top-left-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,0.05)}
+.message.user .bubble{background:linear-gradient(135deg,var(--purple),var(--purple-light));color:white;border-top-right-radius:4px;box-shadow:0 2px 12px rgba(106,13,173,0.25)}
+
+/* Typing */
+.typing-indicator{display:flex;gap:5px;padding:4px 0}
+.typing-indicator span{width:8px;height:8px;background:var(--purple-light);border-radius:50%;animation:typing 1.2s infinite}
+.typing-indicator span:nth-child(2){animation-delay:.2s}.typing-indicator span:nth-child(3){animation-delay:.4s}
+@keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-7px);opacity:1}}
+
+/* Input Area */
+.input-area{background:var(--surface);border-top:2px solid var(--border);padding:14px 20px;position:relative;z-index:10;box-shadow:0 -4px 20px rgba(0,0,0,0.06);flex-shrink:0}
+.input-row{display:flex;gap:10px;align-items:flex-end}
+.input-box{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:16px;padding:12px 16px;font-size:14px;font-family:'Poppins',sans-serif;color:var(--text);resize:none;outline:none;max-height:120px;min-height:48px;transition:border-color .2s;line-height:1.5}
+.input-box:focus{border-color:var(--purple)}
+.input-box::placeholder{color:var(--muted)}
+.btn-send,.btn-voice,.btn-clear{width:48px;height:48px;border-radius:14px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:18px;flex-shrink:0}
+.btn-send{background:linear-gradient(135deg,var(--purple),var(--purple-light));color:white;box-shadow:0 4px 12px rgba(106,13,173,0.3)}
+.btn-send:hover{transform:scale(1.05)}.btn-send:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-voice{background:var(--bg);color:var(--purple);border:1.5px solid var(--border)}
+.btn-voice:hover{background:#f8f0ff;border-color:var(--purple)}
+.btn-voice.recording{background:#fee2e2;border-color:#ef4444;color:#ef4444;animation:prec 1s infinite}
+.btn-clear{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);font-size:14px}
+.btn-clear:hover{background:#fff0f0;color:#ef4444;border-color:#ef4444}
+@keyframes prec{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.3)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+.input-hint{font-size:10.5px;color:var(--muted);text-align:center;margin-top:7px}
+
+/* Voice Modal */
+.voice-modal{display:none;position:fixed;inset:0;background:rgba(74,0,128,0.65);backdrop-filter:blur(10px);z-index:100;align-items:center;justify-content:center}
+.voice-modal.active{display:flex}
+.voice-card{background:white;border-radius:28px;padding:36px;text-align:center;width:300px;box-shadow:0 24px 64px rgba(0,0,0,0.2);animation:popIn .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.voice-logo{width:60px;height:60px;background:linear-gradient(135deg,var(--purple-dark),var(--purple-light));border-radius:18px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 6px 20px rgba(106,13,173,.3)}
+.voice-title{font-size:18px;font-weight:700;color:var(--purple-dark);margin-bottom:6px}
+.voice-waves{display:flex;gap:5px;justify-content:center;align-items:center;height:52px;margin:14px 0}
+.wave-bar{width:5px;background:var(--purple);border-radius:3px;height:20px;animation:wave 1s infinite ease-in-out}
+.wave-bar:nth-child(2){animation-delay:.1s}.wave-bar:nth-child(3){animation-delay:.2s;height:38px}.wave-bar:nth-child(4){animation-delay:.3s}.wave-bar:nth-child(5){animation-delay:.4s;height:30px}.wave-bar:nth-child(6){animation-delay:.1s}.wave-bar:nth-child(7){animation-delay:.35s;height:42px}
+@keyframes wave{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1.5)}}
+.voice-status{color:var(--muted);font-size:12px;margin-bottom:12px}
+.voice-transcript{background:var(--bg);border-radius:12px;padding:12px;font-size:13px;color:var(--text);min-height:48px;margin-bottom:18px;line-height:1.6;font-style:italic;border:1px solid var(--border)}
+.btn-stop{background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;border-radius:14px;padding:12px 28px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;box-shadow:0 4px 12px rgba(239,68,68,.3)}
+
+/* New Features */
+.user-profile{display:flex;align-items:center;gap:10px;background:var(--bg);padding:6px 14px;border-radius:100px;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.user-profile:hover{background:#f8f0ff;border-color:var(--purple)}
+.user-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--purple),var(--purple-light));border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:600}
+.user-name{font-size:12px;font-weight:600;color:var(--text)}
+.dropdown-menu{position:absolute;top:100%;right:0;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.1);min-width:180px;display:none;z-index:100}
+.dropdown-menu.active{display:block}
+.dropdown-item{padding:10px 16px;font-size:13px;color:var(--text);cursor:pointer;transition:all .2s;border:none;background:none;width:100%;text-align:left}
+.dropdown-item:hover{background:#f8f0ff;color:var(--purple)}
+.sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:var(--surface);border-right:1.5px solid var(--border);z-index:100;padding:20px;transform:translateX(-100%);transition:transform .3s}
+.sidebar.active{transform:translateX(0)}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sidebar-title{font-size:14px;font-weight:700;color:var(--purple-dark)}
+.btn-new-chat{width:100%;padding:12px;background:linear-gradient(135deg,var(--purple),var(--purple-light));color:white;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;margin-bottom:16px}
+.btn-new-chat:hover{transform:translateY(-2px)}
+.session-list{overflow-y:auto;max-height:calc(100vh - 180px)}
+.session-item{padding:10px 12px;border-radius:10px;cursor:pointer;font-size:12px;color:var(--text);transition:all .2s;margin-bottom:6px;border:1px solid transparent}
+.session-item:hover{background:#f8f0ff;border-color:var(--purple)}
+.session-item.active{background:#f0e6f7;border-color:var(--purple)}
+.menu-toggle{display:none;background:none;border:none;font-size:20px;cursor:pointer;color:var(--purple);margin-right:10px}
+.chat-container{margin-left:0;transition:margin-left .3s}
+.chat-container.sidebar-open{margin-left:260px}
+.feedback-section{display:flex;gap:8px;margin-top:8px}
+.feedback-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;transition:all .2s;color:var(--muted)}
+.feedback-btn:hover{border-color:var(--purple);color:var(--purple)}
+.feedback-btn.active{background:var(--purple);color:white;border-color:var(--purple)}
+.ticket-btn{background:var(--bg);border:1.5px solid var(--border);color:var(--purple);padding:8px 16px;border-radius:10px;font-size:12px;cursor:pointer;transition:all .2s}
+.ticket-btn:hover{border-color:var(--purple);background:#f8f0ff}
+.modal{display:none;position:fixed;inset:0;background:rgba(74,0,128,0.65);backdrop-filter:blur(10px);z-index:100;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-card{background:white;border-radius:24px;padding:32px;width:100%;max-width:450px;box-shadow:0 24px 64px rgba(0,0,0,0.2);animation:popIn .3s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:18px;font-weight:700;color:var(--purple-dark)}
+.modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted)}
+.form-group{margin-bottom:18px}
+.form-label{font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;display:block}
+.form-input{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;background:var(--bg)}
+.form-input:focus{border-color:var(--purple)}
+.form-input::placeholder{color:var(--muted)}
+select.form-input{cursor:pointer}
+.btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,var(--purple),var(--purple-light));color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Poppins',sans-serif;box-shadow:0 4px 12px rgba(106,13,173,0.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(106,13,173,0.4)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.social-links{display:flex;gap:8px;margin-top:20px;justify-content:center}
+.social-link{width:36px;height:36px;background:var(--bg);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--purple);transition:all .2s;text-decoration:none}
+.social-link:hover{background:var(--purple);color:white}
+
+@media(max-width:768px){.sidebar{position:fixed}.chat-container.sidebar-open{margin-left:0}.menu-toggle{display:block}.header-right{gap:6px}.user-profile .user-name{display:none}}
+@media(max-width:500px){.quick-grid{grid-template-columns:1fr}.bubble{font-size:13px}.header-center{display:none}.navbar{display:none}}
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="#" class="topbar-link">CPD</a>
+    <a href="#" class="topbar-link">Careers</a>
+    <a href="#" class="topbar-link">Online Education</a>
+    <a href="#" class="topbar-link">Alumni</a>
+    <a href="#" class="topbar-link">Gallery</a>
+    <a href="#" class="topbar-link">Contact Us</a>
+  </div>
+  <div class="topbar-right">
+    <a href="https://www.facebook.com/SSUET.Karachi" target="_blank" class="social-icon">f</a>
+    <a href="https://twitter.com/ssuet_karachi" target="_blank" class="social-icon">𝕏</a>
+    <a href="https://www.linkedin.com/school/ssuet/" target="_blank" class="social-icon">in</a>
+    <a href="https://www.youtube.com/@SSUETOfficial" target="_blank" class="social-icon">▶</a>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="ssuet-logo">
+      <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="30" cy="30" r="28" fill="#4a0080" stroke="#6a0dad" stroke-width="1.5"/>
+        <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <rect x="18" y="26" width="24" height="14" rx="2" fill="white" opacity="0.9"/>
+        <line x1="30" y1="26" x2="30" y2="40" stroke="#4a0080" stroke-width="1.5"/>
+        <line x1="30" y1="22" x2="30" y2="27" stroke="#22a84e" stroke-width="2"/>
+        <ellipse cx="30" cy="20" rx="7" ry="4" fill="#22a84e" opacity="0.9"/>
+        <text x="30" y="18" font-size="8" text-anchor="middle" fill="#f5a623">★</text>
+        <text x="22" y="25" font-size="7" text-anchor="middle" fill="white" opacity="0.8">☽</text>
+        <text x="30" y="52" font-size="6" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial">SSUET</text>
+      </svg>
+    </div>
+    <div class="uni-name">
+      <div class="uni-name-top">Sir Syed University</div>
+      <div class="uni-name-bot">of Engineering &amp; Technology — Karachi</div>
+    </div>
+  </div>
+  <div class="header-center">
+    <div>
+      <div class="ai-badge-text">🤖 AI ASSISTANT</div>
+      <div class="ai-badge-sub">Powered by Artificial Intelligence</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="hec-badge">✓ HEC Recognized</div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      <span class="status-label">Live</span>
+    </div>
+    <div class="user-profile" onclick="toggleDropdown()">
+      <div class="user-avatar">{{ user_name[0].upper() }}</div>
+      <span class="user-name">{{ user_name }}</span>
+    </div>
+    <div class="dropdown-menu" id="userDropdown">
+      <button class="dropdown-item" onclick="showTicketModal()">🎫 My Tickets</button>
+      <button class="dropdown-item" onclick="showFeedbackModal()">⭐ Feedback</button>
+      <button class="dropdown-item" onclick="window.location.href='/logout'">🚪 Logout</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-title">📚 Chat History</span>
+    <button class="modal-close" onclick="toggleSidebar()">×</button>
+  </div>
+  <button class="btn-new-chat" onclick="newChat()">+ New Chat</button>
+  <div class="session-list" id="sessionList">
+    <!-- Sessions loaded via JS -->
+  </div>
+</div>
+
+<!-- Nav Bar -->
+<div class="navbar">
+  <div class="nav-item active">About Us</div>
+  <div class="nav-item">Academics</div>
+  <div class="nav-item">Students</div>
+  <div class="nav-item">Admissions</div>
+  <div class="nav-item">QEC</div>
+  <div class="nav-item">ORIC</div>
+  <div class="nav-item">CCPE</div>
+  <div class="nav-item">Research</div>
+  <div class="nav-item">PGP</div>
+  <div class="nav-item">News &amp; Events</div>
+  <div class="nav-item">Directorates</div>
+</div>
+
+<!-- Ticker -->
+<div class="ticker">
+  <span class="ticker-label">📢 NOTICE</span>
+  <div class="ticker-track">
+    <div class="ticker-text">Spring 2026 Admissions Are Now Closed &nbsp;|&nbsp; Fall 2026 Admissions Opening Soon — Stay Connected &nbsp;|&nbsp; New Program: BS Robotics &amp; Intelligent Machines Now Available &nbsp;|&nbsp; Youth Innovation Challenge 2026 &nbsp;|&nbsp; ICISCT 26 Conference — Call for Papers &nbsp;|&nbsp; www.ssuet.edu.pk</div>
+  </div>
+</div>
+
+<!-- Chat -->
+<div class="chat-container" id="chatContainer">
+  <div class="welcome" id="welcomeScreen">
+    <div class="welcome-hero">
+      <div class="ai-icon">🤖</div>
+      <h2>Assalam-o-Alaikum, {{ user_name }}!</h2>
+      <p>Your intelligent guide for everything Sir Syed University. Ask about admissions, programs, departments, fee structure, campus life, and more — in English or Urdu!</p>
+    </div>
+    <div class="quick-grid">
+      <button class="quick-q" onclick="askQ('What programs does SSUET offer?')"><span class="q-icon">📚</span>All Programs at SSUET</button>
+      <button class="quick-q" onclick="askQ('What are SSUET admission requirements and how to apply?')"><span class="q-icon">📝</span>Admission Requirements</button>
+      <button class="quick-q" onclick="askQ('Tell me about the Computer Science and Engineering departments at SSUET')"><span class="q-icon">💻</span>CS &amp; Engineering Depts</button>
+      <button class="quick-q" onclick="askQ('What scholarships and fee concessions are available at SSUET?')"><span class="q-icon">💰</span>Scholarships &amp; Fees</button>
+      <button class="quick-q" onclick="askQ('What is the new BS Robotics and Intelligent Machines program?')"><span class="q-icon">🤖</span>New Robotics Program!</button>
+      <button class="quick-q" onclick="askQ('What campus facilities and student societies are at SSUET?')"><span class="q-icon">🏛️</span>Campus &amp; Student Life</button>
+    </div>
+    <div class="social-links">
+      <a href="https://www.facebook.com/SSUET.Karachi" target="_blank" class="social-link">f</a>
+      <a href="https://twitter.com/ssuet_karachi" target="_blank" class="social-link">𝕏</a>
+      <a href="https://www.linkedin.com/school/ssuet/" target="_blank" class="social-link">in</a>
+      <a href="https://www.youtube.com/@SSUETOfficial" target="_blank" class="social-link">▶</a>
+    </div>
+  </div>
+</div>
+
+<!-- Input -->
+<div class="input-area">
+  <div class="input-row">
+    <button class="btn-voice" id="voiceBtn" onclick="startVoice()" title="Voice input">🎤</button>
+    <textarea class="input-box" id="msgInput" placeholder="Ask anything about SSUET — programs, admissions, fees, campus..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button class="btn-clear" onclick="clearChat()" title="Clear chat">🗑</button>
+    <button class="btn-send" id="sendBtn" onclick="sendMsg()">➤</button>
+  </div>
+  <div class="input-hint">Press Enter to send &nbsp;·&nbsp; Shift+Enter for new line &nbsp;·&nbsp; 🎤 Voice input supported</div>
+</div>
+
+<!-- Voice Modal -->
+<div class="voice-modal" id="voiceModal">
+  <div class="voice-card">
+    <div class="voice-logo">🎙️</div>
+    <div class="voice-title">Voice Input Active</div>
+    <div class="voice-waves">
+      <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+    </div>
+    <div class="voice-status" id="voiceStatus">Speak your question clearly...</div>
+    <div class="voice-transcript" id="voiceTranscript">Waiting for your voice...</div>
+    <button class="btn-stop" onclick="stopVoice()">⏹ Done — Send Question</button>
+  </div>
+</div>
+
+<!-- Ticket Modal -->
+<div class="modal" id="ticketModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 class="modal-title">🎫 Create Support Ticket</h3>
+      <button class="modal-close" onclick="closeTicketModal()">×</button>
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Subject</label>
+      <input type="text" class="form-input" id="ticketSubject" placeholder="Brief description of your issue">
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Description</label>
+      <textarea class="form-input" id="ticketDescription" rows="4" placeholder="Describe your issue in detail"></textarea>
+    </div>
+    <div class="form-group" style="margin-bottom:20px">
+      <label class="form-label">Priority</label>
+      <select class="form-input" id="ticketPriority">
+        <option value="low">Low</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="submitTicket()" style="width:100%">Submit Ticket</button>
+  </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal" id="feedbackModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 class="modal-title">⭐ Feedback & Suggestions</h3>
+      <button class="modal-close" onclick="closeFeedbackModal()">×</button>
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Rating</label>
+      <div style="display:flex;gap:8px" id="ratingStars">
+        <button class="feedback-btn" onclick="setRating(1)">⭐</button>
+        <button class="feedback-btn" onclick="setRating(2)">⭐⭐</button>
+        <button class="feedback-btn" onclick="setRating(3)">⭐⭐⭐</button>
+        <button class="feedback-btn" onclick="setRating(4)">⭐⭐⭐⭐</button>
+        <button class="feedback-btn" onclick="setRating(5)">⭐⭐⭐⭐⭐</button>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Category</label>
+      <select class="form-input" id="feedbackCategory">
+        <option value="ai_assistant">AI Assistant</option>
+        <option value="website">Website</option>
+        <option value="admissions">Admissions</option>
+        <option value="general">General</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:20px">
+      <label class="form-label">Your Suggestions</label>
+      <textarea class="form-input" id="feedbackComment" rows="4" placeholder="Share your feedback or suggestions..."></textarea>
+    </div>
+    <button class="btn-primary" onclick="submitFeedback()" style="width:100%">Submit Feedback</button>
+  </div>
+</div>
+
+<!-- ✅ JavaScript Inline (No external file needed) -->
+<script>
+let messages = [];
+let recognition = null;
+let voiceText = '';
+let currentSessionId = null;
+let selectedRating = 0;
+
+// ── SIDEBAR & UI TOGGLES ──
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+    document.getElementById('chatContainer').classList.toggle('sidebar-open');
+}
+
+function toggleDropdown() {
+    document.getElementById('userDropdown').classList.toggle('active');
+}
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.user-profile')) {
+        document.getElementById('userDropdown').classList.remove('active');
+    }
+});
+
+// ── SESSION & HISTORY MANAGEMENT ──
+
+// 1. Fetch all previous chat sessions from the database
+async function loadSessions() {
+    try {
+        const res = await fetch('/api/sessions');
+        if (!res.ok) return;
+        const data = await res.json();
+        const list = document.getElementById('sessionList');
+        
+        list.innerHTML = data.sessions.map(s => `
+            <div class="session-item ${s.id === currentSessionId ? 'active' : ''}" 
+                 onclick="loadSession(${s.id}, this)">
+                💬 ${s.session_name}
+            </div>
+        `).join('');
+    } catch(err) {
+        console.error('Failed to load sessions:', err);
+    }
+}
+
+// 2. Load a specific chat's messages and display them
+async function loadSession(sessionId, element) {
+    try {
+        currentSessionId = sessionId;
+        
+        // Update active state in sidebar
+        document.querySelectorAll('.session-item').forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+
+        const res = await fetch(`/api/messages/${sessionId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        // Clear screen and hide welcome
+        document.getElementById('welcomeScreen').style.display = 'none';
+        document.getElementById('chatContainer').innerHTML = '';
+        
+        // Load messages from DB
+        data.messages.forEach(msg => {
+            addMsg(msg.sender, msg.content, false);
+        });
+        
+        toggleSidebar(); // Close sidebar on mobile
+    } catch(err) {
+        console.error('Failed to load session:', err);
+    }
+}
+
+// 3. Reset for a brand new chat
+function newChat() {
+    currentSessionId = null;
+    document.getElementById('chatContainer').innerHTML = '';
+    document.getElementById('welcomeScreen').style.display = 'flex';
+    
+    // Remove active state from sidebar
+    document.querySelectorAll('.session-item').forEach(item => item.classList.remove('active'));
+    toggleSidebar();
+}
+
+// ── CORE CHAT LOGIC ──
+
+async function sendMsg() {
+    const input = document.getElementById('msgInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    document.getElementById('welcomeScreen').style.display = 'none';
+    input.value = ''; 
+    input.style.height = 'auto';
+    document.getElementById('sendBtn').disabled = true;
+
+    addMsg('user', text);
+    const tid = showTyping();
+
+    try {
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                message: text, 
+                session_id: currentSessionId // Send current session ID to server
+            })
+        });
+
+        removeTyping(tid);
+
+        if (!res.ok) {
+            const e = await res.json();
+            addMsg('ai', e.reply || '❌ Server error');
+            return;
+        }
+
+        const data = await res.json();
+        addMsg('ai', data.reply);
+        
+        // Update current session ID from response (important for new chats)
+        currentSessionId = data.session_id;
+        
+        // Refresh sidebar to show the new/updated session
+        loadSessions();
+
+    } catch(e) {
+        removeTyping(tid);
+        addMsg('ai', '❌ Connection error. Please try again.');
+    }
+
+    document.getElementById('sendBtn').disabled = false;
+}
+
+function askQ(q) { document.getElementById('msgInput').value = q; sendMsg(); }
+
+function addMsg(role, text, showFeedback = false) {
+    const c = document.getElementById('chatContainer');
+    const d = document.createElement('div');
+    d.className = `message ${role}`;
+    const time = new Date().toLocaleTimeString('en-PK',{hour:'2-digit',minute:'2-digit'});
+    const label = role === 'ai' ? 'SSUET AI Assistant' : 'You';
+    
+    // Add feedback buttons only for new AI messages
+    let feedbackHTML = '';
+    if (showFeedback && role === 'ai') {
+        feedbackHTML = `
+            <div class="feedback-section">
+                <button class="feedback-btn" onclick="rateMessage(this, 'up')">👍 Helpful</button>
+                <button class="feedback-btn" onclick="rateMessage(this, 'down')">👎 Not Helpful</button>
+            </div>
+        `;
+    }
+    
+    d.innerHTML = `
+        <div class="avatar ${role==='ai'?'ai':'user-av'}">${role==='ai'?'🤖':''}</div>
+        <div class="msg-wrap">
+            <div class="msg-label">${label} · ${time}</div>
+            <div class="bubble">${fmt(text)}</div>
+            ${feedbackHTML}
+        </div>`;
+    c.appendChild(d);
+    c.scrollTop = c.scrollHeight;
+}
+
+function fmt(t) {
+    return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+}
+
+function showTyping() {
+    const c = document.getElementById('chatContainer');
+    const d = document.createElement('div');
+    const id = 'typ'+Date.now(); d.id=id; d.className='message ai';
+    d.innerHTML = `<div class="avatar ai">🤖</div><div class="msg-wrap"><div class="msg-label">SSUET AI is thinking...</div><div class="bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
+    c.appendChild(d); c.scrollTop=c.scrollHeight; return id;
+}
+
+function removeTyping(id) { const e=document.getElementById(id); if(e) e.remove(); }
+
+function clearChat() {
+    newChat();
+}
+
+function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} }
+function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+
+// ── VOICE INPUT ──
+function startVoice() {
+    const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){alert('Voice input requires Chrome browser.');return;}
+    recognition=new SR(); recognition.lang='en-US'; recognition.continuous=true; recognition.interimResults=true;
+    voiceText='';
+    document.getElementById('voiceModal').classList.add('active');
+    document.getElementById('voiceTranscript').textContent='Listening...';
+    document.getElementById('voiceBtn').classList.add('recording');
+    recognition.onresult=(e)=>{
+        let f='',i='';
+        for(let x=e.resultIndex;x<e.results.length;x++){
+            if(e.results[x].isFinal) f+=e.results[x][0].transcript;
+            else i+=e.results[x][0].transcript;
+        }
+        if(f) voiceText+=f;
+        document.getElementById('voiceTranscript').textContent=(voiceText+i)||'Listening...';
+    };
+    recognition.onerror=(e)=>{ document.getElementById('voiceStatus').textContent='Error: '+e.error; };
+    recognition.start();
+}
+
+function stopVoice() {
+    if(recognition) recognition.stop();
+    document.getElementById('voiceModal').classList.remove('active');
+    document.getElementById('voiceBtn').classList.remove('recording');
+    if(voiceText.trim()){ document.getElementById('msgInput').value=voiceText.trim(); sendMsg(); }
+}
+
+// ── MODALS & FEEDBACK ──
+function showTicketModal() {
+    document.getElementById('ticketModal').classList.add('active');
+    document.getElementById('userDropdown').classList.remove('active');
+}
+
+function closeTicketModal() {
+    document.getElementById('ticketModal').classList.remove('active');
+}
+
+function showFeedbackModal() {
+    document.getElementById('feedbackModal').classList.add('active');
+    document.getElementById('userDropdown').classList.remove('active');
+}
+
+function closeFeedbackModal() {
+    document.getElementById('feedbackModal').classList.remove('active');
+}
+
+function setRating(rating) {
+    selectedRating = rating;
+    const buttons = document.querySelectorAll('#ratingStars .feedback-btn');
+    buttons.forEach((btn, i) => {
+        btn.classList.toggle('active', i < rating);
+    });
+}
+
+async function submitTicket() {
+    const subject = document.getElementById('ticketSubject').value;
+    const description = document.getElementById('ticketDescription').value;
+    const priority = document.getElementById('ticketPriority').value;
+    
+    if(!subject || !description) { alert('Please fill all fields'); return; }
+
+    try {
+        const res = await fetch('/api/tickets', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({subject, description, priority})
+        });
+        const data = await res.json();
+        if(res.ok) { alert(`Ticket #${data.ticket_id} created!`); closeTicketModal(); }
+    } catch(e) { alert('Error submitting ticket'); }
+}
+
+async function submitFeedback() {
+    if(selectedRating === 0) { alert('Please select a rating'); return; }
+    const category = document.getElementById('feedbackCategory').value;
+    const comment = document.getElementById('feedbackComment').value;
+    
+    try {
+        const res = await fetch('/api/feedback', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({rating: selectedRating, category, comment})
+        });
+        if(res.ok) { alert('Thank you for your feedback!'); closeFeedbackModal(); }
+    } catch(e) { alert('Error submitting feedback'); }
+}
+
+// ── INITIALIZATION ──
+window.addEventListener('DOMContentLoaded', () => {
+    loadSessions(); // Load history when page opens
+});
+
+</script>
+</body>
+</html>

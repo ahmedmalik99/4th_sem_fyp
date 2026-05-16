@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SSUET AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--purple:#6a0dad;--purple-light:#8e24aa;--purple-dark:#4a0080;--green:#1a8c3f;--gold:#f5a623;--white:#fff;--bg:#f5f0fa;--surface:#fff;--border:#e0d0f0;--text:#1a0a2e;--muted:#7a6a8a}
+        body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px}
+        .admin-header{background:var(--surface);border-radius:16px;padding:24px;margin-bottom:24px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+        .admin-title{font-size:20px;font-weight:700;color:var(--purple-dark)}
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+        .stat-card{background:var(--surface);border-radius:16px;padding:20px;border:1.5px solid var(--border);text-align:center}
+        .stat-value{font-size:28px;font-weight:800;color:var(--purple);margin-bottom:4px}
+        .stat-label{font-size:12px;color:var(--muted);font-weight:500}
+        .data-section{background:var(--surface);border-radius:16px;padding:24px;border:1.5px solid var(--border);margin-bottom:24px}
+        .section-title{font-size:16px;font-weight:700;color:var(--purple-dark);margin-bottom:16px}
+        .data-table{width:100%;border-collapse:collapse}
+        .data-table th,.data-table td{padding:12px;text-align:left;border-bottom:1px solid var(--border);font-size:13px}
+        .data-table th{background:#f8f0ff;color:var(--purple-dark);font-weight:600}
+        .data-table tr:hover{background:#f8f0ff}
+        .status-badge{padding:4px 10px;border-radius:100px;font-size:11px;font-weight:600}
+        .status-new{background:#dbeafe;color:#1d4ed8}
+        .status-contacted{background:#fef3c7;color:#d97706}
+        .status-converted{background:#d1fae5;color:#059669}
+        .btn-back{background:var(--purple);color:white;border:none;padding:10px 20px;border-radius:10px;cursor:pointer;font-size:13px}
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1 class="admin-title">📊 SSUET AI Admin Dashboard</h1>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-back" onclick="window.location.href='/'">← Back to Chat</button>
+        <!-- ✅ NEW LOGOUT BUTTON -->
+            <button class="btn-logout" onclick="window.location.href='/logout'">🚪 Logout</button>
+    </div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+        <!-- Stats loaded via JS -->
+    </div>
+
+    <div class="data-section">
+        <h3 class="section-title">📢 Admission Leads</h3>
+        <table class="data-table">
+            <thead>
+                <tr><th>Name</th><th>Email</th><th>Phone</th><th>Program</th><th>Status</th><th>Date</th></tr>
+            </thead>
+            <tbody id="leadsTable"></tbody>
+        </table>
+    </div>
+
+    <div class="data-section">
+        <h3 class="section-title">👨‍🏫 Faculty Directory</h3>
+        <table class="data-table">
+            <thead>
+                <tr><th>Name</th><th>Designation</th><th>Department</th><th>Email</th><th>Specialization</th></tr>
+            </thead>
+            <tbody id="facultyTable"></tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/admin/stats');
+                const stats = await res.json();
+                
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="stat-card"><div class="stat-value">${stats.total_users || 0}</div><div class="stat-label">Total Users</div></div>
+                    <div class="stat-card"><div class="stat-value">${stats.total_messages || 0}</div><div class="stat-label">Total Messages</div></div>
+                    <div class="stat-card"><div class="stat-value">${stats.total_leads || 0}</div><div class="stat-label">Admission Leads</div></div>
+                    <div class="stat-card"><div class="stat-value">${stats.avg_rating ? stats.avg_rating.toFixed(1) : 'N/A'}</div><div class="stat-label">Avg Rating</div></div>
+                `;
+            } catch(e) { console.error("Stats error:", e); }
+        }
+
+        async function loadLeads() {
+            try {
+                const res = await fetch('/api/admin/leads');
+                const data = await res.json();
+                const tbody = document.getElementById('leadsTable');
+                tbody.innerHTML = data.leads.map(lead => `
+                    <tr>
+                        <td>${lead.name}</td>
+                        <td>${lead.email}</td>
+                        <td>${lead.phone}</td>
+                        <td>${lead.interest_program || 'Not specified'}</td>
+                        <td><span class="status-badge status-${lead.status}">${lead.status}</span></td>
+                        <td>${new Date(lead.created_at).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } catch(e) { console.error("Leads error:", e); }
+        }
+
+        async function loadFaculty() {
+            try {
+                const res = await fetch('/api/admin/faculty');
+                const data = await res.json();
+                const tbody = document.getElementById('facultyTable');
+                tbody.innerHTML = data.faculty.map(f => `
+                    <tr>
+                        <td>${f.name}</td>
+                        <td>${f.designation}</td>
+                        <td>${f.department}</td>
+                        <td>${f.email}</td>
+                        <td>${f.specialization || 'N/A'}</td>
+                    </tr>
+                `).join('');
+            } catch(e) { console.error("Faculty error:", e); }
+        }
+
+        loadStats();
+        loadLeads();
+        loadFaculty();
+    </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+/* ── NEW FEATURE STYLES ── */
+
+/* Form Inputs (for modals) */
+.form-group{margin-bottom:18px}
+.form-label{font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;display:block}
+.form-input{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;background:var(--bg)}
+.form-input:focus{border-color:var(--purple)}
+.form-input::placeholder{color:var(--muted)}
+select.form-input{cursor:pointer}
+
+/* User Profile Dropdown */
+.user-profile{display:flex;align-items:center;gap:10px;background:var(--bg);padding:6px 14px;border-radius:100px;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.user-profile:hover{background:#f8f0ff;border-color:var(--purple)}
+.user-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--purple),var(--purple-light));border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:600}
+.user-name{font-size:12px;font-weight:600;color:var(--text)}
+
+/* Dropdown Menu */
+.dropdown-menu{position:absolute;top:100%;right:0;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.1);min-width:180px;display:none;z-index:100}
+.dropdown-menu.active{display:block}
+.dropdown-item{padding:10px 16px;font-size:13px;color:var(--text);cursor:pointer;transition:all .2s;border:none;background:none;width:100%;text-align:left}
+.dropdown-item:hover{background:#f8f0ff;color:var(--purple)}
+.dropdown-divider{height:1px;background:var(--border);margin:4px 0}
+
+/* Sidebar */
+.sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:var(--surface);border-right:1.5px solid var(--border);z-index:100;padding:20px;transform:translateX(-100%);transition:transform .3s}
+.sidebar.active{transform:translateX(0)}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sidebar-title{font-size:14px;font-weight:700;color:var(--purple-dark)}
+.btn-new-chat{width:100%;padding:12px;background:linear-gradient(135deg,var(--purple),var(--purple-light));color:white;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;margin-bottom:16px}
+.btn-new-chat:hover{transform:translateY(-2px)}
+.session-list{overflow-y:auto;max-height:calc(100vh - 180px)}
+.session-item{padding:10px 12px;border-radius:10px;cursor:pointer;font-size:12px;color:var(--text);transition:all .2s;margin-bottom:6px;border:1px solid transparent}
+.session-item:hover{background:#f8f0ff;border-color:var(--purple)}
+.session-item.active{background:#f0e6f7;border-color:var(--purple)}
+
+/* Menu Toggle */
+.menu-toggle{display:none;background:none;border:none;font-size:20px;cursor:pointer;color:var(--purple);margin-right:10px}
+
+/* Chat Container with Sidebar */
+.chat-container{margin-left:0;transition:margin-left .3s}
+.chat-container.sidebar-open{margin-left:260px}
+
+/* Feedback Section in Messages */
+.feedback-section{display:flex;gap:8px;margin-top:8px}
+.feedback-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;transition:all .2s;color:var(--muted)}
+.feedback-btn:hover{border-color:var(--purple);color:var(--purple)}
+.feedback-btn.active{background:var(--purple);color:white;border-color:var(--purple)}
+
+/* Ticket Button */
+.ticket-btn{background:var(--bg);border:1.5px solid var(--border);color:var(--purple);padding:8px 16px;border-radius:10px;font-size:12px;cursor:pointer;transition:all .2s}
+.ticket-btn:hover{border-color:var(--purple);background:#f8f0ff}
+
+/* Modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(74,0,128,0.65);backdrop-filter:blur(10px);z-index:100;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-card{background:white;border-radius:24px;padding:32px;width:100%;max-width:450px;box-shadow:0 24px 64px rgba(0,0,0,0.2);animation:popIn .3s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:18px;font-weight:700;color:var(--purple-dark)}
+.modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted)}
+
+/* Social Links in Welcome */
+.social-links{display:flex;gap:8px;margin-top:20px;justify-content:center}
+.social-link{width:36px;height:36px;background:var(--bg);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--purple);transition:all .2s;text-decoration:none}
+.social-link:hover{background:var(--purple);color:white}
+
+/* Responsive */
+@media(max-width:768px){
+    .sidebar{position:fixed}
+    .chat-container.sidebar-open{margin-left:0}
+    .menu-toggle{display:block}
+    .header-right{gap:6px}
+    .user-profile .user-name{display:none}
+}
