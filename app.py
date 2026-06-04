@@ -60,12 +60,13 @@ API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 # Priority list: Free High-Quality -> Free Fast -> Paid Stable
 MODELS = [
-    'openai/gpt-4o-mini:free',            # 🥇 Best Free Model
-    'google/gemma-2-9b-it:free',          # 🥈 High Intelligence
+    'gemini-2.5-flash',                   # 🥇 Best Free/Low-Cost (Ultra Fast & 1M+ Context)
+    'gemini-2.5-pro',                     # 🧠 Best Coding & Deep Reasoning
+    'google/gemma-2-9b-it:free',          # 🥈 High Intelligence (Open Source fallback)
     'meta-llama/llama-3-8b-instruct:free', # 🥉 Very Fast & Reliable
     'mistralai/mistral-7b-instruct:free', # 🍀 Backup Free
-    'openai/gpt-4o-mini',                 # 💰 Paid (The ultimate fallback)
 ]
+
 
 
 SYSTEM_PROMPT = """You are the official AI Assistant for Sir Syed University of Engineering and Technology (SSUET), Karachi, Pakistan. search for everything online first from thier official website.
