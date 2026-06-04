@@ -60,12 +60,13 @@ API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 # Priority list: Free High-Quality -> Free Fast -> Paid Stable
 MODELS = [
-    'gemini-2.5-flash',                   # 🥇 Best Free/Low-Cost (Ultra Fast & 1M+ Context)
-    'gemini-2.5-pro',                     # 🧠 Best Coding & Deep Reasoning
-    'google/gemma-2-9b-it:free',          # 🥈 High Intelligence (Open Source fallback)
-    'meta-llama/llama-3-8b-instruct:free', # 🥉 Very Fast & Reliable
-    'mistralai/mistral-7b-instruct:free', # 🍀 Backup Free
+    'gemini-3.5-flash',                   # 🥇 Best Free/Low-Cost (Frontier performance, ultra fast)
+    'gemini-3.1-pro',                     # 🧠 Best Coding, Agentic Workflows & Deep Reasoning
+    'gemini-3.1-flash-lite',              # 📉 Ultimate Budget/High-Volume Workhorse
+    'google/gemma-2-9b-it:free',          # 🥈 High Intelligence Open-Source fallback
+    'meta-llama/llama-3-8b-instruct:free', # 🥉 Very Fast & Reliable Third-Party option
 ]
+
 
 
 
