@@ -60,11 +60,11 @@ API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 # Priority list: Free High-Quality -> Free Fast -> Paid Stable
 MODELS = [
-    'gemini-3.5-flash',                   # 🥇 Best Free/Low-Cost (Frontier performance, ultra fast)
-    'gemini-3.1-pro',                     # 🧠 Best Coding, Agentic Workflows & Deep Reasoning
-    'gemini-3.1-flash-lite',              # 📉 Ultimate Budget/High-Volume Workhorse
-    'google/gemma-2-9b-it:free',          # 🥈 High Intelligence Open-Source fallback
-    'meta-llama/llama-3-8b-instruct:free', # 🥉 Very Fast & Reliable Third-Party option
+    'perplexity/sonar',                 # 🥇 Best for real-time web search (recommended)
+    'perplexity/sonar-pro',             # 🧠 Best accuracy + deeper web reasoning
+    'perplexity/sonar-reasoning',       # 🔍 Strong reasoning + search hybrid model
+    'perplexity/sonar-small',           # ⚡ Fast + lightweight web search model
+    'perplexity/sonar-small-online',    # 📡 Ultra fast online search (budget friendly)
 ]
 
 
