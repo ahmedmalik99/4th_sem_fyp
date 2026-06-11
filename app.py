@@ -5,13 +5,13 @@ import mysql.connector
 import bcrypt
 import os
 from datetime import datetime
+from dotenv import load_dotenv
 
+load_dotenv()
 
 app = Flask(__name__, static_folder='static', template_folder='templates', static_url_path='/static')
 CORS(app)
 app.secret_key = 'ssuet_ai_secret_key_2026_change_this_in_production'
-
-import mysql.connector
 
 DB_CONFIG = {
     "host": "autorack.proxy.rlwy.net",
@@ -27,50 +27,40 @@ def get_db_connection():
     except Exception as e:
         print(f"❌ Database Connection Error: {e}")
         return None
-#testtttttttttttttt
-conn = get_db_connection()
 
+conn = get_db_connection()
 if conn:
     print("✅ DATABASE CONNECTED SUCCESSFULLY")
-
     cursor = conn.cursor()
     cursor.execute("SHOW TABLES;")
-    
     tables = cursor.fetchall()
-
     print("📦 TABLES IN DATABASE:")
     for t in tables:
         print(t)
-
+    cursor.close()
+    conn.close()
 else:
     print("❌ CONNECTION FAILED")
+
 # ── API CONFIGURATION ──
-# We use a list for keys so the AI can switch if one runs out of credits
-import os
-from dotenv import load_dotenv
+# FIX 1: Filter out None values so we never iterate over missing keys
+API_KEYS = [k for k in [os.getenv("API_KEY_1"), os.getenv("API_KEY_2")] if k]
 
-load_dotenv()
-
-API_KEYS = [
-    os.getenv("API_KEY_1"),
-    os.getenv("API_KEY_2")
-]
+if not API_KEYS:
+    print("⚠️  WARNING: No API keys loaded from environment!")
 
 API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
-# Priority list: Free High-Quality -> Free Fast -> Paid Stable
+# FIX 2: Use VALID OpenRouter model IDs (verified as of 2026)
 MODELS = [
-    'openai/gpt-4o-mini:free',            # 🥇 Best Free Model
-    'google/gemma-2-9b-it:free',          # 🥈 High Intelligence
-    'meta-llama/llama-3-8b-instruct:free', # 🥉 Very Fast & Reliable
-    'mistralai/mistral-7b-instruct:free', # 🍀 Backup Free
-    'openai/gpt-4o-mini',                 # 💰 Paid (The ultimate fallback)
+    'openai/gpt-4o-mini:free',             # 🥇 Best Free Model
+    'google/gemma-2-9b-it:free',           # 🥈 High Intelligence Free
+    'meta-llama/llama-3.1-8b-instruct:free', # 🥉 Very Fast & Reliable Free
+    'mistralai/mistral-7b-instruct:free',  # 🍀 Backup Free
+    'openai/gpt-4o-mini',                  # 💰 Paid fallback
 ]
 
-
-
-
-SYSTEM_PROMPT = """You are the official AI Assistant for Sir Syed University of Engineering and Technology (SSUET), Karachi, Pakistan. search for everything online first from thier official website.
+SYSTEM_PROMPT = """You are the official AI Assistant for Sir Syed University of Engineering and Technology (SSUET), Karachi, Pakistan.
 
 SSUET KEY FACTS:
 - Full name: Sir Syed University of Engineering and Technology (SSUET)
@@ -112,15 +102,9 @@ def serve_static(filename):
 # ── MAIN ROUTES ──
 @app.route('/')
 def index():
-    # 1. Check if user is logged in
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
-    # ❌ REMOVED: The auto-redirect for admin is gone from here.
-    # This allows the admin to actually stay on the chat page.
-    
     return render_template('index.html', user_name=session.get('user_name', 'User'))
-
 
 # ── AUTH ROUTES ──
 @app.route('/register', methods=['GET', 'POST'])
@@ -132,49 +116,43 @@ def register():
             email = data.get('email')
             phone = data.get('phone')
             password = data.get('password')
-            
+
             if not all([name, email, phone, password]):
                 return jsonify({"error": "All fields are required"}), 400
-            
+
             conn = get_db_connection()
             if not conn:
                 return jsonify({"error": "Database connection failed"}), 500
-            
+
             cursor = conn.cursor()
-            
-            # Check if email exists
             cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
             if cursor.fetchone():
                 cursor.close()
                 conn.close()
                 return jsonify({"error": "Email already registered"}), 400
-            
-            # Hash password
+
             password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            
-            # Insert user
+
             cursor.execute(
                 "INSERT INTO users (name, email, phone, password_hash) VALUES (%s, %s, %s, %s)",
                 (name, email, phone, password_hash)
             )
             conn.commit()
             user_id = cursor.lastrowid
-            
-            # Create lead entry for admission tracking
+
             cursor.execute(
                 "INSERT INTO leads (user_id, name, email, phone) VALUES (%s, %s, %s, %s)",
                 (user_id, name, email, phone)
             )
             conn.commit()
-            
             cursor.close()
             conn.close()
-            
+
             return jsonify({"success": True, "message": "Registration successful! Please login."})
-            
+
         except Exception as e:
             return jsonify({"error": str(e)}), 500
-    
+
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -184,51 +162,48 @@ def login():
             data = request.json
             email = data.get('email')
             password = data.get('password')
-            
+
             conn = get_db_connection()
             if not conn:
                 return jsonify({"error": "Database connection failed"}), 500
-            
+
             cursor = conn.cursor(dictionary=True)
-            
             cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
             user = cursor.fetchone()
-            
             cursor.close()
             conn.close()
-            
+
             if user and bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
                 session['user_id'] = user['id']
                 session['user_name'] = user['name']
                 session['user_email'] = user['email']
-                
-                # Update last login
+
                 conn = get_db_connection()
-                cursor = conn.cursor()
-                cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user['id'],))
-                conn.commit()
-                cursor.close()
-                conn.close()
-                
-                # ✅ Auto-redirect admin to admin panel
+                if conn:
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user['id'],))
+                    conn.commit()
+                    cursor.close()
+                    conn.close()
+
                 if email == 'admin@ssuet.edu.pk':
                     return jsonify({
-                        "success": True, 
+                        "success": True,
                         "message": "Login successful! Redirecting to admin panel...",
                         "redirect": "/admin"
                     })
-                
+
                 return jsonify({
-                    "success": True, 
+                    "success": True,
                     "message": "Login successful!",
                     "redirect": "/"
                 })
             else:
                 return jsonify({"error": "Invalid email or password"}), 401
-                
+
         except Exception as e:
             return jsonify({"error": str(e)}), 500
-    
+
     return render_template('login.html')
 
 @app.route('/logout')
@@ -240,12 +215,15 @@ def logout():
 def chat():
     if 'user_id' not in session:
         return jsonify({"error": "Please login first"}), 401
-    
+
+    if not API_KEYS:
+        return jsonify({"reply": "❌ No API keys configured. Please check your .env file."}), 500
+
     try:
         data = request.json
         user_message = data.get('message', '')
         session_id = data.get('session_id')
-        
+
         # --- DATABASE: Save User Message ---
         try:
             if not session_id:
@@ -295,15 +273,13 @@ def chat():
             *history,
             {"role": "user", "content": user_message}
         ]
-        
+
         # ─── DOUBLE-LAYER FALLBACK SYSTEM ───
-        # Layer 1: Try different Models
         for model in MODELS:
-            # Layer 2: Try different API Keys for the same model
             for key in API_KEYS:
                 try:
                     print(f"🔄 Attempting: Model={model} | Key=...{key[-5:]}")
-                    
+
                     response = requests.post(
                         API_URL,
                         headers={
@@ -317,40 +293,51 @@ def chat():
                             "max_tokens": 1024,
                             "messages": messages_payload
                         },
-                        timeout=15 
+                        timeout=15
                     )
-                    
+
                     if response.status_code == 200:
                         result = response.json()
-                        ai_reply = result['choices'][0]['message']['content']
-                        
-                        # Save AI response to DB
+                        # FIX 3: Guard against malformed responses
+                        choices = result.get('choices')
+                        if not choices or not choices[0].get('message'):
+                            print(f"⚠️ Empty choices from {model}, trying next...")
+                            continue
+
+                        ai_reply = choices[0]['message']['content']
+
+                        # FIX 4: Corrected SQL placeholder (was "% laL")
                         try:
                             conn = get_db_connection()
                             if conn:
                                 cursor = conn.cursor()
                                 cursor.execute(
-                                    "INSERT INTO messages (session_id, sender, content) VALUES (%s, %s, % laL)",
+                                    "INSERT INTO messages (session_id, sender, content) VALUES (%s, %s, %s)",
                                     (session_id, 'ai', ai_reply)
                                 )
                                 conn.commit()
                                 cursor.close()
                                 conn.close()
-                        except: pass
-                        
+                        except Exception as db_e:
+                            print(f"⚠️ DB AI Save Error: {db_e}")
+
                         print(f"✅ SUCCESS! Used Model: {model}")
                         return jsonify({"reply": ai_reply, "session_id": session_id, "model": model})
-                    
+
                     else:
-                        print(f"❌ Key failed for {model} (Status: {response.status_code})")
-                        continue # Try next key
-                        
+                        # FIX 5: Log the actual error body for easier debugging
+                        print(f"❌ Model {model} failed (Status: {response.status_code}): {response.text[:200]}")
+                        continue  # Try next key
+
+                except requests.exceptions.Timeout:
+                    print(f"⏱️ Timeout with {model}")
+                    continue
                 except Exception as e:
                     print(f"⚠️ Request Error with {model}: {e}")
-                    continue # Try next key
-        
-        return jsonify({"reply": "❌ All API keys and all models are currently unavailable. Please try again in a few minutes."}), 500
-            
+                    continue
+
+        return jsonify({"reply": "❌ All API keys and models are currently unavailable. Please try again in a few minutes."}), 500
+
     except Exception as e:
         print(f"❌ CRITICAL SERVER ERROR: {e}")
         return jsonify({"reply": f"❌ Server Error: {str(e)}"}), 500
@@ -360,12 +347,12 @@ def chat():
 def get_sessions():
     if 'user_id' not in session:
         return jsonify({"error": "Please login first"}), 401
-    
+
     try:
         conn = get_db_connection()
         if not conn:
             return jsonify({"error": "Database connection failed"}), 500
-        
+
         cursor = conn.cursor(dictionary=True)
         cursor.execute(
             "SELECT id, session_name, created_at FROM chat_sessions WHERE user_id = %s ORDER BY created_at DESC",
@@ -374,7 +361,7 @@ def get_sessions():
         sessions = cursor.fetchall()
         cursor.close()
         conn.close()
-        
+
         return jsonify({"sessions": sessions})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -383,23 +370,21 @@ def get_sessions():
 def get_messages(session_id):
     if 'user_id' not in session:
         return jsonify({"error": "Please login first"}), 401
-    
+
     try:
         conn = get_db_connection()
         if not conn:
             return jsonify({"error": "Database connection failed"}), 500
-        
+
         cursor = conn.cursor(dictionary=True)
-        
-        # Verify session belongs to user
         cursor.execute("SELECT user_id FROM chat_sessions WHERE id = %s", (session_id,))
         result = cursor.fetchone()
-        
+
         if not result or result['user_id'] != session['user_id']:
             cursor.close()
             conn.close()
             return jsonify({"error": "Unauthorized"}), 403
-        
+
         cursor.execute(
             "SELECT sender, content, created_at FROM messages WHERE session_id = %s ORDER BY created_at ASC",
             (session_id,)
@@ -407,7 +392,7 @@ def get_messages(session_id):
         messages = cursor.fetchall()
         cursor.close()
         conn.close()
-        
+
         return jsonify({"messages": messages})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -417,17 +402,17 @@ def get_messages(session_id):
 def submit_feedback():
     if 'user_id' not in session:
         return jsonify({"error": "Please login first"}), 401
-    
+
     try:
         data = request.json
         rating = data.get('rating')
         category = data.get('category', 'general')
         comment = data.get('comment', '')
-        
+
         conn = get_db_connection()
         if not conn:
             return jsonify({"error": "Database connection failed"}), 500
-        
+
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO feedback (user_id, rating, category, comment) VALUES (%s, %s, %s, %s)",
@@ -436,7 +421,7 @@ def submit_feedback():
         conn.commit()
         cursor.close()
         conn.close()
-        
+
         return jsonify({"success": True, "message": "Thank you for your feedback!"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -446,21 +431,20 @@ def submit_feedback():
 def tickets():
     if 'user_id' not in session:
         return jsonify({"error": "Please login first"}), 401
-    
+
     try:
         conn = get_db_connection()
         if not conn:
             return jsonify({"error": "Database connection failed"}), 500
-        
+
         cursor = conn.cursor(dictionary=True)
-        
+
         if request.method == 'POST':
-            # Create ticket
             data = request.json
             subject = data.get('subject')
             description = data.get('description')
             priority = data.get('priority', 'medium')
-            
+
             cursor.execute(
                 "INSERT INTO tickets (user_id, subject, description, priority) VALUES (%s, %s, %s, %s)",
                 (session['user_id'], subject, description, priority)
@@ -469,11 +453,10 @@ def tickets():
             ticket_id = cursor.lastrowid
             cursor.close()
             conn.close()
-            
+
             return jsonify({"success": True, "ticket_id": ticket_id, "message": "Ticket created successfully!"})
-        
+
         else:
-            # Get tickets
             cursor.execute(
                 "SELECT id, subject, status, priority, created_at FROM tickets WHERE user_id = %s ORDER BY created_at DESC",
                 (session['user_id'],)
@@ -481,9 +464,9 @@ def tickets():
             tickets_list = cursor.fetchall()
             cursor.close()
             conn.close()
-            
+
             return jsonify({"tickets": tickets_list})
-            
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -492,64 +475,55 @@ def tickets():
 def admin():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
-    # Check if admin email
+
     if session.get('user_email') != 'admin@ssuet.edu.pk':
         return jsonify({"error": "Unauthorized - Admin access only"}), 403
-    
+
     return render_template('admin.html')
 
 @app.route('/api/admin/stats')
 def admin_stats():
     if session.get('user_email') != 'admin@ssuet.edu.pk':
         return jsonify({"error": "Unauthorized"}), 403
-    
+
     try:
         conn = get_db_connection()
         if not conn:
             return jsonify({"error": "Database connection failed"}), 500
-        
+
         cursor = conn.cursor(dictionary=True)
-        
         stats = {}
-        
-        # Total users
+
         cursor.execute("SELECT COUNT(*) as count FROM users")
         stats['total_users'] = cursor.fetchone()['count']
-        
-        # Total messages
+
         cursor.execute("SELECT COUNT(*) as count FROM messages")
         stats['total_messages'] = cursor.fetchone()['count']
-        
-        # Total leads
+
         cursor.execute("SELECT COUNT(*) as count FROM leads")
         stats['total_leads'] = cursor.fetchone()['count']
-        
-        # Leads by status
+
         cursor.execute("SELECT status, COUNT(*) as count FROM leads GROUP BY status")
         stats['leads_by_status'] = cursor.fetchall()
-        
-        # Feedback average rating
+
         cursor.execute("SELECT AVG(rating) as avg_rating FROM feedback")
         stats['avg_rating'] = cursor.fetchone()['avg_rating'] or 0
-        
-        # Tickets by status
+
         cursor.execute("SELECT status, COUNT(*) as count FROM tickets GROUP BY status")
         stats['tickets_by_status'] = cursor.fetchall()
-        
-        # Messages per day (last 7 days)
+
         cursor.execute("""
-            SELECT DATE(created_at) as date, COUNT(*) as count 
-            FROM messages 
+            SELECT DATE(created_at) as date, COUNT(*) as count
+            FROM messages
             WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
             GROUP BY DATE(created_at)
             ORDER BY date ASC
         """)
         stats['messages_per_day'] = cursor.fetchall()
-        
+
         cursor.close()
         conn.close()
-        
+
         return jsonify(stats)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -558,18 +532,18 @@ def admin_stats():
 def admin_leads():
     if session.get('user_email') != 'admin@ssuet.edu.pk':
         return jsonify({"error": "Unauthorized"}), 403
-    
+
     try:
         conn = get_db_connection()
         if not conn:
             return jsonify({"error": "Database connection failed"}), 500
-        
+
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM leads ORDER BY created_at DESC")
         leads = cursor.fetchall()
         cursor.close()
         conn.close()
-        
+
         return jsonify({"leads": leads})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -580,13 +554,13 @@ def get_faculty():
         conn = get_db_connection()
         if not conn:
             return jsonify({"error": "Database connection failed"}), 500
-        
+
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM faculty ORDER BY department, name")
         faculty = cursor.fetchall()
         cursor.close()
         conn.close()
-        
+
         return jsonify({"faculty": faculty})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -598,14 +572,15 @@ def health():
         "status": "ok",
         "message": "SSUET AI Server is running!",
         "models_available": len(MODELS),
-        "free_models": len([m for m in MODELS if ":free" in m])
+        "free_models": len([m for m in MODELS if ":free" in m]),
+        "api_keys_loaded": len(API_KEYS)
     })
 
-# ── MAIN ──
 # ── MAIN ──
 if __name__ == '__main__':
     print("\n" + "="*60)
     print("🎓 SSUET AI Assistant Server Starting...")
+    print(f"🔑 API Keys loaded: {len(API_KEYS)}")
+    print(f"🤖 Models configured: {len(MODELS)}")
     print("="*60)
-
     app.run(host="0.0.0.0", port=5000)
