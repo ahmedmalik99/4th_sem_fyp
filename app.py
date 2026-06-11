@@ -60,11 +60,11 @@ API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 # Priority list: Free High-Quality -> Free Fast -> Paid Stable
 MODELS = [
-    'perplexity/sonar',                 # 🥇 Best for real-time web search (recommended)
-    'perplexity/sonar-pro',             # 🧠 Best accuracy + deeper web reasoning
-    'perplexity/sonar-reasoning',       # 🔍 Strong reasoning + search hybrid model
-    'perplexity/sonar-small',           # ⚡ Fast + lightweight web search model
-    'perplexity/sonar-small-online',    # 📡 Ultra fast online search (budget friendly)
+    'openai/gpt-4o-mini:free',            # 🥇 Best Free Model
+    'google/gemma-2-9b-it:free',          # 🥈 High Intelligence
+    'meta-llama/llama-3-8b-instruct:free', # 🥉 Very Fast & Reliable
+    'mistralai/mistral-7b-instruct:free', # 🍀 Backup Free
+    'openai/gpt-4o-mini',                 # 💰 Paid (The ultimate fallback)
 ]
 
 
